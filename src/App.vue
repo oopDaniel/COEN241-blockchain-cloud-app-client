@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <img alt="Vue logo" src="./assets/gamble.jpg" />
+    <Bet />
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import Bet from './components/Bet.vue'
 
 export default {
-  name: "app",
+  name: 'App',
   components: {
-    HelloWorld
+    Bet
   }
 };
 </script>
@@ -24,5 +24,12 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  font-size: 1.5em;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
