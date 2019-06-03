@@ -23,16 +23,25 @@
     </div>
 
     <div class="btns">
-      <el-button class="btn" @click="bet" :disabled="hasPlayed">Bet</el-button>
-      <el-button class="btn" @click="endGame">End the game</el-button>
+      <el-button
+        class="btn"
+        @click="bet"
+        :disabled="!selectedTarget || hasPlayed"
+      >
+        Bet
+      </el-button>
+      <el-button class="btn" @click="startEndingGame" :disabled="!hasPlayed">
+        End the game
+      </el-button>
     </div>
-
   </div>
 </template>
 
 <script>
-import { post } from '../services/api'
+import { get, post } from '../services/api'
 import { FIXED_PASSWORD } from '../utils/constants'
+
+const FETCH_GAME_STATUS_INTERVAL = 5000
 
 export default {
   name: 'Bet',
@@ -59,29 +68,74 @@ export default {
       try {
         await post(`/api/game/${this.address}`, {
           password: FIXED_PASSWORD,
-          number: this.selectedTarget.charCodeAt(0) - 64, // e.g. 'B' to 2
+          number: this.selectedTarget.charCodeAt(0) - 65, // e.g. 'B' to 1
           value: this.amount
         })
+        this.showPostBetHint()
         this.hasPlayed = true
       } catch (e) {
         console.warn(e.message)
       }
     },
-    async endGame() {
+    async startEndingGame() {
       if (!this.hasPlayed) return
       try {
         await post(`/api/game/${this.address}/distribute`, {
           password: FIXED_PASSWORD
         })
+        this.showEndGameHint()
+        this.endGame()
       } catch (e) {
         console.warn(e.message)
       }
+    },
+    endGame() {
+      const interval = setInterval(() => {
+        get('/api/game')
+          .then(res =>
+            res.ending ? null : get('/api/game/prev').then(res => res.prevGame)
+          )
+          .then(res => {
+            if (res && res.prevWinNumber !== undefined) {
+              clearInterval(interval)
+              const winner = String.fromCharCode(65 + res.prevWinNumber)
+              this.showPostEndGameHint(winner)
+              this.hasPlayed = false
+            }
+          })
+      }, FETCH_GAME_STATUS_INTERVAL)
+    },
+    showEndGameHint() {
+      this.$message({
+        // eslint-disable-next-line
+        message: 'The banker is calculating the winner of the game carefully...',
+        showClose: true,
+        duration: 0,
+        type: 'warning'
+      })
+    },
+    showPostEndGameHint(winner) {
+      const hasWon = winner === this.selectedTarget
+      const gameMsg = hasWon ? 'You win!' : 'You lose!'
+      this.$message({
+        message: `The winner is ${winner}. ${gameMsg}`,
+        showClose: true,
+        duration: 12000,
+        type: hasWon ? 'success' : 'warning'
+      })
+    },
+    showPostBetHint() {
+      this.$message({
+        // eslint-disable-next-line
+        message: `You Bet ${this.selectedTarget} win! You can wait for more players or just end the game now.`,
+        showClose: true,
+        duration: 0
+      })
     }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="stylus" scoped>
 .bet {
   flex-direction column

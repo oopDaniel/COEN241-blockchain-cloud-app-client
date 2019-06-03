@@ -24,11 +24,17 @@ export default {
   methods: {
     async initAccount() {
       this.showHint()
-      // const { address } = await post('/api/contract/account')
-      // this.address = address
-      this.address = '0xc781307eFf80F69FCe5c3909c86439e6a373358c'
-      // await this.getInitialFunding()
-      await this.getAccountBalance()
+
+      // For testing
+      // this.address = '0xc781307eFf80F69FCe5c3909c86439e6a373358c'
+
+      const { address } = await post('/api/contract/account')
+      this.address = address
+
+      // Don't wait for this show API call, which takes like 4 mins
+      this.getInitialFunding()
+      setTimeout(() => this.getAccountBalance(), 4 * 60000)
+
       this.hideHint()
     },
     async getInitialFunding() {
@@ -57,10 +63,8 @@ export default {
   created() {
     this.initAccount()
   },
-  components: {
-    Bet
-  }
-};
+  components: { Bet }
+}
 </script>
 
 <style>
