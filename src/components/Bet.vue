@@ -18,11 +18,12 @@
         v-model="amount"
         :step="step"
         :min="10"
+        :max="balance"
       ></el-input-number>
     </div>
 
     <div class="btns">
-      <el-button class="btn" @click="bet">Bet</el-button>
+      <el-button class="btn" @click="bet" :disabled="hasPlayed">Bet</el-button>
       <el-button class="btn" @click="endGame">End the game</el-button>
     </div>
 
@@ -30,13 +31,21 @@
 </template>
 
 <script>
+import { post } from '../services/api'
+import { FIXED_PASSWORD } from '../utils/constants'
+
 export default {
   name: 'Bet',
+  props: {
+    address: String,
+    balance: Number
+  },
   data: () => ({
     betTargets: ['A', 'B', 'C', 'D', 'E'],
     selectedTarget: '',
     amount: 10,
-    step: 10
+    step: 10,
+    hasPlayed: false
   }),
   methods: {
     selectTarget(target) {
@@ -46,15 +55,30 @@ export default {
         this.selectedTarget = target
       }
     },
-    bet() {
+    async bet() {
+      try {
+        await post(`/api/game/${this.address}`, {
+          password: FIXED_PASSWORD,
+          number: this.selectedTarget.charCodeAt(0) - 64, // e.g. 'B' to 2
+          value: this.amount
+        })
+        this.hasPlayed = true
+      } catch (e) {
+        console.warn(e.message)
+      }
     },
-    endGame() {
+    async endGame() {
+      if (!this.hasPlayed) return
+      try {
+        await post(`/api/game/${this.address}/distribute`, {
+          password: FIXED_PASSWORD
+        })
+      } catch (e) {
+        console.warn(e.message)
+      }
     }
-  },
-  props: {
-    msg: String
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
