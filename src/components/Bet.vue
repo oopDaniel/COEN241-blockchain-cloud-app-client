@@ -66,6 +66,7 @@ export default {
     },
     async bet() {
       try {
+        console.warn('start time:', performance.now())
         await post(`/api/game/${this.address}`, {
           password: FIXED_PASSWORD,
           number: this.selectedTarget.charCodeAt(0) - 65, // e.g. 'B' to 1
@@ -101,6 +102,7 @@ export default {
               const winner = String.fromCharCode(65 + res.prevWinNumber)
               this.showPostEndGameHint(winner)
               this.hasPlayed = false
+              console.warn('end time:', performance.now())
             }
           })
       }, FETCH_GAME_STATUS_INTERVAL)
