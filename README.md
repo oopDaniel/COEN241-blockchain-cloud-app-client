@@ -1,4 +1,9 @@
-# client
+# BetMinimum - Blockchain Cloud Application - client
+
+The client of this interesting game application powered by `Vue` and `Blockchain` (`Ethereum`).
+
+![](images/game.png)
+
 
 ## Project setup
 ```
